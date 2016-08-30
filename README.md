@@ -1,7 +1,7 @@
 # silex-tools
 Tools for Silex 2 framework.
 
-Library is fully compatible with **Silex 2.0+** (releases `2.0+`).
+Library is fully compatible with **Silex 2.0+**.
 
 ## Installation
 You can install library through [Composer](http://getcomposer.org):
