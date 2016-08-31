@@ -71,11 +71,11 @@ class DoctrineConsoleServiceProvider implements ServiceProviderInterface, Bootab
      * {@inheritdoc}
      */
     public function boot(Application $app) {
-        $this->console->addCommands([
+        $commands = [
             new \Doctrine\DBAL\Tools\Console\Command\ImportCommand(),
             new \Doctrine\DBAL\Tools\Console\Command\ReservedWordsCommand(),
             new \Doctrine\DBAL\Tools\Console\Command\RunSqlCommand(),
-        ]);
+        ];
 
         $helperSet = new HelperSet([
             'db' => new ConnectionHelper($app['db']),
@@ -83,8 +83,7 @@ class DoctrineConsoleServiceProvider implements ServiceProviderInterface, Bootab
 
         if (isset($app['orm.em'])) {  // Doctrine ORM commands and helpers
             $helperSet->set(new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($app['orm.em']), 'em');
-
-            $this->console->addCommands([
+            $commands = array_merge($commands, [
                 new \Doctrine\ORM\Tools\Console\Command\ClearCache\CollectionRegionCommand(),
                 new \Doctrine\ORM\Tools\Console\Command\ClearCache\EntityRegionCommand(),
                 new \Doctrine\ORM\Tools\Console\Command\ClearCache\MetadataCommand(),
@@ -110,6 +109,7 @@ class DoctrineConsoleServiceProvider implements ServiceProviderInterface, Bootab
         }
 
         $this->console->setHelperSet($helperSet);
+        $this->console->addCommands($commands);
     }
 
 }
