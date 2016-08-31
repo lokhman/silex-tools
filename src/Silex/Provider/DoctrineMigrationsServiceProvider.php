@@ -92,10 +92,10 @@ class DoctrineMigrationsServiceProvider implements ServiceProviderInterface, Boo
             'Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand',
         ];
 
-        $helperSet = new HelperSet(array(
+        $helperSet = new HelperSet([
             'connection' => new ConnectionHelper($app['db']),
             'question'   => new QuestionHelper(),
-        ));
+        ]);
 
         if (isset($app['orm.em'])) {  // Doctrine ORM commands and helpers
             $helperSet->set(new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($app['orm.em']), 'em');

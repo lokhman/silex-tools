@@ -77,9 +77,9 @@ class DoctrineConsoleServiceProvider implements ServiceProviderInterface, Bootab
             new \Doctrine\DBAL\Tools\Console\Command\RunSqlCommand(),
         ]);
 
-        $helperSet = new HelperSet(array(
-            'connection' => new ConnectionHelper($app['db']),
-        ));
+        $helperSet = new HelperSet([
+            'db' => new ConnectionHelper($app['db']),
+        ]);
 
         if (isset($app['orm.em'])) {  // Doctrine ORM commands and helpers
             $helperSet->set(new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($app['orm.em']), 'em');
