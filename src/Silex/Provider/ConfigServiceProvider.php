@@ -39,24 +39,8 @@ use Pimple\ServiceProviderInterface;
  */
 class ConfigServiceProvider implements ServiceProviderInterface {
 
-    const ENV_VAR_NAME = 'SILEX_ENV';
-    const FILE_EXTENSION = '.json';
-    const DEFAULT_ENV = 'dev';
-
-    /**
-     * Target environment.
-     *
-     * @var string
-     */
-    protected $env;
-
-    /**
-     * Configuration parameters.
-     *
-     * @var array
-     */
-    protected $params;
-
+    const DEFAULT_ENV_VARNAME = 'SILEX_ENV';
+    const DEFAULT_ENVIRONMENT = 'dev';
 
     /**
      * Root directory.
@@ -66,101 +50,88 @@ class ConfigServiceProvider implements ServiceProviderInterface {
     protected $dir;
 
     /**
+     * Target environment.
+     *
+     * @var string
+     */
+    protected $env;
+
+    /**
+     * Additional parameters.
+     *
+     * @var array
+     */
+    protected $params;
+
+    /**
      * Constructor.
      *
      * @param string $dir
-     * @param array  $params
-     * @param string $env
+     * @param array  $options
      */
-    public function __construct($dir, array $params = [], $env = null) {
-        $this->env = self::getenv($env);
+    public function __construct($dir, array $options = []) {
         $this->dir = realpath($dir);
-        $this->params = $params + [
-            '%dir%' => $this->dir,
-            '%env%' => $this->env,
-        ];
-    }
 
-    /**
-     * Gets environment name based on $env, $argv, or $_ENV.
-     *
-     * @param string|null $env
-     *
-     * @return string
-     */
-    protected static function getenv($env = null) {
-        if ($env !== null) {
-            return $env;
-        }
-        $opts = getopt('', ['env:']);
-        if ($opts && isset($opts['env'])) {
-            return $opts['env'];
-        }
-        return getenv(self::ENV_VAR_NAME) ? : self::DEFAULT_ENV;
-    }
-
-    /**
-     * Loads file contents from the path.
-     *
-     * @param string $path
-     *
-     * @throws \RuntimeException
-     * @return string
-     */
-    protected static function load($path) {
-        if (!is_file($path) || !is_readable($path)) {
-            throw new \RuntimeException('Unable to load config from ' . $path);
-        }
-        return file_get_contents($path);
-    }
-
-    /**
-     * Converts file contents to PHP literal.
-     *
-     * @param string $str
-     *
-     * @throws \RuntimeException
-     * @return mixed
-     */
-    protected static function parse($str) {
-        $result = json_decode($str, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException('JSON format is invalid');
-        }
-        return $result;
-    }
-
-    /**
-     * Recursively replaces tokens.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    protected function replace($value) {
-        if (!$this->params) {
-            return $value;
-        }
-        if (is_array($value)) {
-            foreach ($value as $k => $v) {
-                $value[$k] = $this->replace($v);
+        if (isset($options['env'])) {
+            $this->env = $options['env'];
+        } else {
+            $varname = self::DEFAULT_ENV_VARNAME;
+            if (isset($options['env_varname'])) {
+                $varname = $options['env_varname'];
             }
-            return $value;
+            $this->env = getenv($varname) ? : self::DEFAULT_ENVIRONMENT;
         }
-        if (is_string($value)) {
-            return strtr($value, $this->params);
+
+        $this->params = ['__DIR__' => $this->dir, '__ENV__' => $this->env];
+        if (isset($options['params']) && is_array($options['params'])) {
+            $this->params += array_change_key_case($options['params'], CASE_UPPER);
         }
-        return $value;
+    }
+
+    /**
+     * Replaces tokens in the configuration.
+     *
+     * @param mixed $config
+     *
+     * @return mixed
+     */
+    protected function replaceTokens($config) {
+        if (is_string($config)) {
+            return preg_replace_callback('/%(\w+)%/', function($matches) {
+                $token = strtoupper($matches[1]);
+                if (isset($this->params[$token])) {
+                    return $this->params[$token];
+                }
+                return getenv($token);
+            }, $config);
+        }
+
+        if (is_array($config)) {
+            array_walk($config, function(&$value) {
+                $value = $this->replaceTokens($value);
+            });
+        }
+
+        return $config;
     }
 
     /**
      * {@inheritdoc}
      */
     public function register(Container $app) {
-        $path = $this->dir . DIRECTORY_SEPARATOR . $this->env . self::FILE_EXTENSION;
-        foreach (self::parse(self::load($path)) as $key => $value) {
+        $path = $this->dir . DIRECTORY_SEPARATOR . $this->env . '.json';
+        if (!is_file($path) || !is_readable($path)) {
+            throw new \RuntimeException(sprintf('Unable to load configuration from "%s".', $path));
+        }
+
+        $config = json_decode(file_get_contents($path), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException('Configuration JSON format is invalid.');
+        }
+
+        foreach ($config as $key => $value) {
             $app[$key] = $app->factory(function() use ($value) {
-                return $this->replace($value);
+                return $this->replaceTokens($value);
             });
         }
     }

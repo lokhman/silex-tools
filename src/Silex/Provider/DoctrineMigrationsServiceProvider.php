@@ -44,7 +44,7 @@ use Doctrine\DBAL\Migrations\OutputWriter;
  * Silex service provider for Doctrine Migrations library.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
- * @link https://github.com/lokhman/silex-doctrine-migrations
+ * @link https://github.com/lokhman/silex-tools
  */
 class DoctrineMigrationsServiceProvider implements ServiceProviderInterface, BootableProviderInterface {
 
