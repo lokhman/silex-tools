@@ -40,7 +40,7 @@ use Pimple\ServiceProviderInterface;
 class ConfigServiceProvider implements ServiceProviderInterface {
 
     const DEFAULT_ENV_VARNAME = 'SILEX_ENV';
-    const DEFAULT_ENVIRONMENT = 'dev';
+    const DEFAULT_ENVIRONMENT = 'local';
 
     /**
      * Root directory.
