@@ -138,7 +138,8 @@ class ConfigServiceProvider implements ServiceProviderInterface {
         }
 
         if (isset($data['$extends'])) {
-            $data += $this->readFile($data['$extends']);
+            $extends = $this->readFile($data['$extends']);
+            $data = array_replace_recursive($extends, $data);
             unset($data['$extends']);
         }
 
