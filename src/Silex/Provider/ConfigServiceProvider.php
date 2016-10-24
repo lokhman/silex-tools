@@ -91,28 +91,58 @@ class ConfigServiceProvider implements ServiceProviderInterface {
     /**
      * Replaces tokens in the configuration.
      *
-     * @param mixed $config
+     * @param mixed $data
      *
      * @return mixed
      */
-    protected function replaceTokens($config) {
-        if (is_string($config)) {
+    protected function replaceTokens($data) {
+        if (is_string($data)) {
             return preg_replace_callback('/%(\w+)%/', function($matches) {
                 $token = strtoupper($matches[1]);
                 if (isset($this->params[$token])) {
                     return $this->params[$token];
                 }
                 return getenv($token);
-            }, $config);
+            }, $data);
         }
 
-        if (is_array($config)) {
-            array_walk($config, function(&$value) {
+        if (is_array($data)) {
+            array_walk($data, function(&$value) {
                 $value = $this->replaceTokens($value);
             });
         }
 
-        return $config;
+        return $data;
+    }
+
+    /**
+     * Reads configuration file.
+     *
+     * @param string $path
+     *
+     * @return mixed
+     *
+     * @throws \RuntimeException
+     */
+    protected function readFile($path) {
+        if (!is_file($path) || !is_readable($path)) {
+            throw new \RuntimeException(sprintf('Unable to load configuration from "%s".', $path));
+        }
+
+        $data = json_decode(file_get_contents($path), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException('Configuration JSON format is invalid.');
+        }
+
+        if (isset($data['$extends'])) {
+            $extends = preg_replace('/.json$/', '', ltrim($data['$extends'], '/'));
+            $path = $this->dir . DIRECTORY_SEPARATOR . $extends . '.json';
+            unset($data['$extends']);
+
+            return array_merge($data, $this->readFile($path));
+        }
+
+        return $data;
     }
 
     /**
@@ -120,16 +150,7 @@ class ConfigServiceProvider implements ServiceProviderInterface {
      */
     public function register(Container $app) {
         $path = $this->dir . DIRECTORY_SEPARATOR . $this->env . '.json';
-        if (!is_file($path) || !is_readable($path)) {
-            throw new \RuntimeException(sprintf('Unable to load configuration from "%s".', $path));
-        }
-
-        $config = json_decode(file_get_contents($path), true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException('Configuration JSON format is invalid.');
-        }
-
-        foreach ($config as $key => $value) {
+        foreach ($this->readFile($path) as $key => $value) {
             $app[$key] = $app->factory(function() use ($value) {
                 return $this->replaceTokens($value);
             });
