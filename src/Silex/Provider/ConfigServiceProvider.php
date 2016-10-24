@@ -125,6 +125,9 @@ class ConfigServiceProvider implements ServiceProviderInterface {
      * @throws \RuntimeException
      */
     protected function readFile($path) {
+        $basename = preg_replace('/.json$/', '', ltrim($path, '/'));
+        $path = $this->dir . DIRECTORY_SEPARATOR . $basename . '.json';
+
         if (!is_file($path) || !is_readable($path)) {
             throw new \RuntimeException(sprintf('Unable to load configuration from "%s".', $path));
         }
@@ -135,11 +138,8 @@ class ConfigServiceProvider implements ServiceProviderInterface {
         }
 
         if (isset($data['$extends'])) {
-            $extends = preg_replace('/.json$/', '', ltrim($data['$extends'], '/'));
-            $path = $this->dir . DIRECTORY_SEPARATOR . $extends . '.json';
+            $data += $this->readFile($data['$extends']);
             unset($data['$extends']);
-
-            return array_merge($data, $this->readFile($path));
         }
 
         return $data;
@@ -149,8 +149,7 @@ class ConfigServiceProvider implements ServiceProviderInterface {
      * {@inheritdoc}
      */
     public function register(Container $app) {
-        $path = $this->dir . DIRECTORY_SEPARATOR . $this->env . '.json';
-        foreach ($this->readFile($path) as $key => $value) {
+        foreach ($this->readFile($this->env) as $key => $value) {
             $app[$key] = $app->factory(function() use ($value) {
                 return $this->replaceTokens($value);
             });
