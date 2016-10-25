@@ -69,11 +69,12 @@ class DoctrineMigrationsServiceProvider implements ServiceProviderInterface, Boo
      */
     public function register(Container $app) {
         $app['migrations.output_writer'] = new OutputWriter(
-            function ($message) {
+            function($message) {
                 $output = new ConsoleOutput();
                 $output->writeln($message);
             }
         );
+
         $app['migrations.directory']  = null;
         $app['migrations.namespace']  = null;
         $app['migrations.name']       = 'Migrations';
