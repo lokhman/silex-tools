@@ -30,6 +30,8 @@ namespace Lokhman\Silex\Provider;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use Silex\Api\BootableProviderInterface;
+use Silex\Application;
 
 /**
  * Silex service provider for lightweight JSON framework configuration.
@@ -37,78 +39,30 @@ use Pimple\ServiceProviderInterface;
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools
  */
-class ConfigServiceProvider implements ServiceProviderInterface {
-
-    const DEFAULT_ENV_VARNAME = 'SILEX_ENV';
-    const DEFAULT_ENVIRONMENT = 'local';
-
-    /**
-     * Root directory.
-     *
-     * @var string
-     */
-    protected $dir;
-
-    /**
-     * Target environment.
-     *
-     * @var string
-     */
-    protected $env;
-
-    /**
-     * Additional parameters.
-     *
-     * @var array
-     */
-    protected $params;
-
-    /**
-     * Constructor.
-     *
-     * @param string $dir
-     * @param array  $options
-     */
-    public function __construct($dir, array $options = []) {
-        $this->dir = realpath($dir);
-
-        if (isset($options['env'])) {
-            $this->env = $options['env'];
-        } else {
-            $varname = self::DEFAULT_ENV_VARNAME;
-            if (isset($options['env_varname'])) {
-                $varname = $options['env_varname'];
-            }
-            $this->env = getenv($varname) ? : self::DEFAULT_ENVIRONMENT;
-        }
-
-        $this->params = ['__DIR__' => $this->dir, '__ENV__' => $this->env];
-        if (isset($options['params']) && is_array($options['params'])) {
-            $this->params += array_change_key_case($options['params'], CASE_UPPER);
-        }
-    }
+class ConfigServiceProvider implements ServiceProviderInterface, BootableProviderInterface {
 
     /**
      * Replaces tokens in the configuration.
      *
-     * @param mixed $data
+     * @param mixed $data   Configuration
+     * @param array $tokens Tokens to replace
      *
      * @return mixed
      */
-    protected function replaceTokens($data) {
+    public static function replaceTokens($data, $tokens) {
         if (is_string($data)) {
-            return preg_replace_callback('/%(\w+)%/', function($matches) {
+            return preg_replace_callback('/%(\w+)%/', function($matches) use ($tokens) {
                 $token = strtoupper($matches[1]);
-                if (isset($this->params[$token])) {
-                    return $this->params[$token];
+                if (isset($tokens[$token])) {
+                    return $tokens[$token];
                 }
-                return getenv($token);
+                return getenv($token) ? : $matches[0];
             }, $data);
         }
 
         if (is_array($data)) {
-            array_walk($data, function(&$value) {
-                $value = $this->replaceTokens($value);
+            array_walk($data, function(&$value) use ($tokens) {
+                $value = ConfigServiceProvider::replaceTokens($value, $tokens);
             });
         }
 
@@ -118,15 +72,21 @@ class ConfigServiceProvider implements ServiceProviderInterface {
     /**
      * Reads configuration file.
      *
-     * @param string $path
+     * @param string $dir  Configuration directory
+     * @param string $path Configuration file path
      *
      * @return mixed
      *
      * @throws \RuntimeException
      */
-    protected function readFile($path) {
-        $basename = preg_replace('/.json$/', '', ltrim($path, '/'));
-        $path = $this->dir . DIRECTORY_SEPARATOR . $basename . '.json';
+    public static function readFile($dir, $path) {
+        if (!pathinfo($path, PATHINFO_EXTENSION)) {
+            $path .= '.json';
+        }
+
+        if ($path[0] != '/') {
+            $path = $dir . DIRECTORY_SEPARATOR . $path;
+        }
 
         if (!is_file($path) || !is_readable($path)) {
             throw new \RuntimeException(sprintf('Unable to load configuration from "%s".', $path));
@@ -138,7 +98,7 @@ class ConfigServiceProvider implements ServiceProviderInterface {
         }
 
         if (isset($data['$extends'])) {
-            $extends = $this->readFile($data['$extends']);
+            $extends = ConfigServiceProvider::readFile($dir, $data['$extends']);
             $data = array_replace_recursive($extends, $data);
             unset($data['$extends']);
         }
@@ -150,9 +110,40 @@ class ConfigServiceProvider implements ServiceProviderInterface {
      * {@inheritdoc}
      */
     public function register(Container $app) {
-        foreach ($this->readFile($this->env) as $key => $value) {
-            $app[$key] = $app->factory(function() use ($value) {
-                return $this->replaceTokens($value);
+        $app['config.dir'] = null;
+        $app['config.params'] = [];
+
+        $app['config.env.default'] = 'local';
+        $app['config.varname.default'] = 'SILEX_ENV';
+
+        $app['config'] = function(Container $app) {
+            if (false === $app['config.dir'] = realpath($app['config.dir'])) {
+                throw new \RuntimeException('Parameter "config.dir" should contain a valid path.');
+            }
+
+            if (!isset($app['config.env'])) {
+                $varname = $app['config.varname.default'];
+                if (isset($app['config.varname'])) {
+                    $varname = $app['config.varname'];
+                }
+                $app['config.env'] = getenv($varname) ? : $app['config.env.default'];
+            }
+
+            $params = ['__DIR__' => $app['config.dir'], '__ENV__' => $app['config.env']];
+            $params += array_change_key_case($app['config.params'], CASE_UPPER);
+            $app['config.params'] = $params;
+
+            return ConfigServiceProvider::readFile($app['config.dir'], $app['config.env']);
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function boot(Application $app) {
+        foreach ($app['config'] as $key => $value) {
+            $app[$key] = $app->factory(function(Application $app) use ($value) {
+                return ConfigServiceProvider::replaceTokens($value, $app['config.params']);
             });
         }
     }
