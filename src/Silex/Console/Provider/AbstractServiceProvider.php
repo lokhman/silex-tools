@@ -26,44 +26,46 @@
  * SOFTWARE.
  */
 
-namespace Lokhman\Silex\Console;
+namespace Lokhman\Silex\Console\Provider;
 
-use Silex\Application as Container;
-use Symfony\Component\Console\Application as Console;
+use Pimple\ServiceProviderInterface;
+use Lokhman\Silex\Console\Console;
 
 /**
- * Silex console Application class.
+ * AbstractServiceProvider class.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools
  */
-class Application extends Console {
+abstract class AbstractServiceProvider implements ServiceProviderInterface {
 
     /**
-     * @var Container
-     */
-    protected $container;
-
-    /**
-     * Constructor.
+     * The console application.
      *
-     * @param Container $container Container application
-     * @param string $name         The name of the application
-     * @param string $version      The version of the application
+     * @var Console
      */
-    public function __construct(Container $container, $name = 'UNKNOWN', $version = 'UNKNOWN') {
-        $this->container = $container;
+    private $console;
 
-        parent::__construct($name, $version);
+    /**
+     * Sets console.
+     *
+     * @param Console $console
+     *
+     * @return Console
+     */
+    public function setConsole(Console $console) {
+        $this->console = $console;
+
+        return $this;
     }
 
     /**
-     * Returns container application.
+     * Gets console.
      *
-     * @return Container
+     * @return Console
      */
-    public function getContainer() {
-        return $this->container;
+    public function getConsole() {
+        return $this->console;
     }
 
 }

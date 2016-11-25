@@ -26,13 +26,11 @@
  * SOFTWARE.
  */
 
-namespace Lokhman\Silex\Provider;
+namespace Lokhman\Silex\Console\Provider;
 
 use Pimple\Container;
-use Pimple\ServiceProviderInterface;
 use Silex\Application;
 use Silex\Api\BootableProviderInterface;
-use Symfony\Component\Console\Application as Console;
 use Symfony\Component\Console\Helper\HelperSet;
 use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
 
@@ -42,23 +40,7 @@ use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools
  */
-class DoctrineConsoleServiceProvider implements ServiceProviderInterface, BootableProviderInterface {
-
-    /**
-     * The console application.
-     *
-     * @var Console
-     */
-    protected $console;
-
-    /**
-     * Constructor.
-     *
-     * @param Console $console
-     */
-    public function __construct(Console $console) {
-        $this->console = $console;
-    }
+class DoctrineServiceProvider extends AbstractServiceProvider implements BootableProviderInterface {
 
     /**
      * {@inheritdoc}
@@ -108,8 +90,8 @@ class DoctrineConsoleServiceProvider implements ServiceProviderInterface, Bootab
             ]);
         }
 
-        $this->console->setHelperSet($helperSet);
-        $this->console->addCommands($commands);
+        $this->getConsole()->setHelperSet($helperSet);
+        $this->getConsole()->addCommands($commands);
     }
 
 }

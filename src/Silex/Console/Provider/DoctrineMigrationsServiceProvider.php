@@ -26,13 +26,11 @@
  * SOFTWARE.
  */
 
-namespace Lokhman\Silex\Provider;
+namespace Lokhman\Silex\Console\Provider;
 
 use Pimple\Container;
-use Pimple\ServiceProviderInterface;
 use Silex\Application;
 use Silex\Api\BootableProviderInterface;
-use Symfony\Component\Console\Application as Console;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -41,28 +39,12 @@ use Doctrine\DBAL\Migrations\Configuration\Configuration;
 use Doctrine\DBAL\Migrations\OutputWriter;
 
 /**
- * Silex service provider for Doctrine Migrations library.
+ * Silex service provider for Doctrine Migrations console commands.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools
  */
-class DoctrineMigrationsServiceProvider implements ServiceProviderInterface, BootableProviderInterface {
-
-    /**
-     * The console application.
-     *
-     * @var Console
-     */
-    protected $console;
-
-    /**
-     * Constructor.
-     *
-     * @param Console $console
-     */
-    public function __construct(Console $console) {
-        $this->console = $console;
-    }
+class DoctrineMigrationsServiceProvider extends AbstractServiceProvider implements BootableProviderInterface {
 
     /**
      * {@inheritdoc}
@@ -103,13 +85,13 @@ class DoctrineMigrationsServiceProvider implements ServiceProviderInterface, Boo
             $commands[] = 'Doctrine\DBAL\Migrations\Tools\Console\Command\DiffCommand';
         }
 
-        $this->console->setHelperSet($helperSet);
+        $this->getConsole()->setHelperSet($helperSet);
 
         $configuration = new Configuration($app['db'], $app['migrations.output_writer']);
         $configuration->setMigrationsDirectory($app['migrations.directory']);
         $configuration->setMigrationsNamespace($app['migrations.namespace']);
-        $configuration->setName($app['migrations.name']);
         $configuration->setMigrationsTableName($app['migrations.table_name']);
+        $configuration->setName($app['migrations.name']);
 
         $configuration->registerMigrationsFromDirectory($app['migrations.directory']);
 
@@ -117,7 +99,7 @@ class DoctrineMigrationsServiceProvider implements ServiceProviderInterface, Boo
             /** @var AbstractCommand $command */
             $command = new $name();
             $command->setMigrationConfiguration($configuration);
-            $this->console->add($command);
+            $this->getConsole()->add($command);
         }
     }
 
