@@ -88,7 +88,7 @@ class Console extends BaseConsole {
      *
      * @return Console
      */
-    public function register(AbstractServiceProvider $provider, array $values = array()) {
+    public function registerServiceProvider(AbstractServiceProvider $provider, array $values = array()) {
         $this->container->register($provider->setConsole($this), $values);
 
         return $this;
