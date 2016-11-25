@@ -4,12 +4,10 @@
     "description": "Tools for Silex 2+ framework",
     "keywords": ["silex", "tools"],
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Alexander Lokhman",
-            "email": "alex.lokhman@gmail.com"
-        }
-    ],
+    "authors": [{
+        "name": "Alexander Lokhman",
+        "email": "alex.lokhman@gmail.com"
+    }],
     "autoload": {
         "psr-4": { "Lokhman\\Silex\\": "src/Silex" }
     },
@@ -17,7 +15,8 @@
         "silex/silex": "~2.0"
     },
     "suggest": {
-        "symfony/console": "For using console specific service providers",
+        "symfony/console": "For using Silex console application",
+        "symfony/finder": "For using AutoReload service provider",
         "doctrine/dbal": "For using Doctrine service providers",
         "doctrine/migrations": "For using Doctrine Migrations service provider"
     }
