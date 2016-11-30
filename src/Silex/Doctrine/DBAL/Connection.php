@@ -29,6 +29,7 @@
 namespace Lokhman\Silex\Doctrine\DBAL;
 
 use Doctrine\DBAL\Connection as BaseConnection;
+use Doctrine\DBAL\Exception as DBALExceptions;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
@@ -79,8 +80,9 @@ class Connection extends BaseConnection {
         foreach ($this->getSchemaManager()->listTableColumns($tableName) as $column) {
             $types[$column->getName()] = $column->getType()->getName();
         }
-        if (!$types) {
-            throw new DBALException(sprintf("Table '%s' does not exist.", $tableName));
+        if (!isset($types)) {
+            throw new DBALExceptions\TableNotFoundException(
+                sprintf("Table '%s' does not exist.", $tableName));
         }
         return $types;
     }
@@ -132,7 +134,7 @@ class Connection extends BaseConnection {
         $parsedSql = $this->parseSql($query);
 
         if (!$parsedSql instanceof Statements\SelectStatement) {
-            throw new DBALException('SQL query should be SELECT.');
+            throw new DBALExceptions\SyntaxErrorException('SQL query should be SELECT.');
         }
 
         // guess param types
@@ -151,8 +153,6 @@ class Connection extends BaseConnection {
             return new Statement($this->getDatabasePlatform(), $stmt);
         }
 
-        $mappings = [];
-
         // collect table names
         foreach ($tableExprs as $expr) {
             if ($expr->alias) {
@@ -165,6 +165,8 @@ class Connection extends BaseConnection {
         foreach (array_unique($tableNames) as $tableName) {
             $columnTypes[$tableName] = $this->getColumnTypes($tableName);
         }
+
+        $mappings = [];
 
         // generate result mapping
         foreach ($parsedSql->expr as $expr) {
