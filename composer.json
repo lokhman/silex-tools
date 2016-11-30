@@ -15,9 +15,11 @@
         "silex/silex": "~2.0"
     },
     "suggest": {
+        "ext-apcu": "For using AutoReload and Doctrine service providers",
         "symfony/console": "For using Silex console application",
         "symfony/finder": "For using AutoReload service provider",
         "doctrine/dbal": "For using Doctrine service providers",
-        "doctrine/migrations": "For using Doctrine Migrations service provider"
+        "doctrine/migrations": "For using Doctrine Migrations service provider",
+        "phpmyadmin/sql-parser": "For using Doctrine service provider"
     }
 }
