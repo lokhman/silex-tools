@@ -237,4 +237,18 @@ class Connection extends BaseConnection {
         return parent::executeUpdate($query, $params, $types);
     }
 
+    /**
+     * Prepares and executes an SQL query and returns the first row of the result
+     * as an associative array. Alias of <b>fetchAssoc</b>.
+     *
+     * @param string $statement The SQL query.
+     * @param array  $params    The query parameters.
+     * @param array  $types     The query parameter types.
+     *
+     * @return array
+     */
+    public function fetch($statement, array $params = [], array $types = []) {
+        return parent::fetchAssoc($statement, $params, $types);
+    }
+
 }
