@@ -70,6 +70,7 @@ class DoctrineMigrationsServiceProvider extends AbstractServiceProvider implemen
         $commands = [
             'Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand',
             'Doctrine\DBAL\Migrations\Tools\Console\Command\GenerateCommand',
+            'Doctrine\DBAL\Migrations\Tools\Console\Command\LatestCommand',
             'Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand',
             'Doctrine\DBAL\Migrations\Tools\Console\Command\StatusCommand',
             'Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand',
