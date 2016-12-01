@@ -1,13 +1,19 @@
 # silex-tools
 Tools for [**Silex 2.0+**](http://silex.sensiolabs.org/) micro-framework.
 
-## Installation
-You can install library through [Composer](http://getcomposer.org):
+## <a name="installation"></a>Installation
+You can install `silex-tools` with [Composer](http://getcomposer.org):
 
     composer require lokhman/silex-tools
 
-## Components
-### Console Application
+## <a name="components"></a>Components
+- [Console Application](#console-application)
+- [Config Service Provider](#config-service-provider)
+- [Doctrine Service Provider](#doctrine-service-provider)
+- [AutoReload Service Provider](#autoreload-service-provider)
+- [Tools Trait](#tools-trait)
+
+### <a name="console-application"></a>Console Application
 A wrapper class for [Symfony Console](https://github.com/symfony/console)
 application that registers console commands and service providers. Also supplies
 `DoctrineServiceProvider` and `DoctrineMigrationsServiceProvider` classes to
@@ -34,7 +40,10 @@ register commands for [Doctrine DBAL](https://github.com/doctrine/dbal),
     ]);
     $console->run();
 
-### [Config Service Provider](docs/config-service-provider.md)
+Console supports [`ConfigServiceProvider`](#config-service-provider) and adds
+`--env` (`-e` in short) option to all registered commands.
+
+### <a name="config-service-provider"></a>[Config Service Provider](docs/config-service-provider.md)
 Simple and lightweight configuration provider, which uses JSON files to manage
 application configuration. Library supports different environments via setting
 a global environment variable.
@@ -45,7 +54,7 @@ a global environment variable.
         'config.dir' => __DIR__ . '/../app/config',
     ]);
 
-### Doctrine Service Provider
+### <a name="doctrine-service-provider"></a>Doctrine Service Provider
 Extended [`DoctrineServiceProvider`](http://silex.sensiolabs.org/doc/master/providers/doctrine.html)
 with wrapper classes for Doctrine `Connection` and `Statement`. It overrides the
 configuration and setup of the original service provider, but can automatically
@@ -71,18 +80,18 @@ guess parameter types in SELECT, INSERT, UPDATE and DELETE queries.
     $param = new \DateTime();  // parameter will be converted to `datetimetz`
     $user = $app['db']->fetchAssoc('SELECT * FROM tbl WHERE col > ?', [$param]);
     /*
-     * [
-     *     "id" => 1,
-     *     "name" => "Name",
-     *     "created_at" => <object DateTime>
-     * ]
+     * array (size=3)
+     *   'id' => int 1
+     *   'name' => string 'Name'
+     *   'created_at' => object(DateTime)
      */
 
 Module is compatible with PDO drivers only and requires
 [`APCu`](http://php.net/manual/en/book.apcu.php) extension enabled for better
-performance.
+performance. To clear APCu cache use console command `cache:clear`, that is
+registered automatically with [Console Application](#console-application).
 
-### AutoReload Service Provider
+### <a name="autoreload-service-provider"></a>AutoReload Service Provider
 Simple service provider for page auto-reload functionality. It will embed small
 JavaScript file into every page with Content-Type `text/html` that will reload
 the page once any (as per configuration) file in the tree is updated. Supports
@@ -106,7 +115,7 @@ Module can be switched off setting parameter `autoreload` to `false`.
 Requires [`APCu`](http://php.net/manual/en/book.apcu.php) extension enabled and
 [`Symfony Finder`](https://github.com/symfony/finder) library.
 
-### Tools Trait
+### <a name="tools-trait"></a>Tools Trait
 Trait to be included in overridden Silex `Application` class. Provides various
 useful methods to be used in the container.
 
@@ -121,6 +130,6 @@ useful methods to be used in the container.
         }
     }
 
-## License
+## <a name="license"></a>License
 Library is available under the MIT license. The included LICENSE file describes
 this in detail.
