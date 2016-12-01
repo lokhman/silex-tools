@@ -59,7 +59,7 @@ Extended [`DoctrineServiceProvider`](http://silex.sensiolabs.org/doc/master/prov
 with wrapper classes for Doctrine `Connection` and `Statement`. It overrides the
 configuration and setup of the original service provider, but can automatically
 convert fetched values as per Doctrine column types from the database schema and
-guess parameter types in SELECT, INSERT, UPDATE and DELETE queries.
+guess parameter types in SELECT, INSERT, UPDATE and DELETE statements.
 
     use Lokhman\Silex\Provider as ToolsProviders;
 
@@ -80,7 +80,7 @@ guess parameter types in SELECT, INSERT, UPDATE and DELETE queries.
     $param = new \DateTime();  // parameter will be converted to `datetimetz`
     $user = $app['db']->fetchAssoc('SELECT * FROM tbl WHERE col > ?', [$param]);
 
-    /*
+    /**
      * array (size=3)
      *   'id' => int 1
      *   'name' => string 'Name'
@@ -94,9 +94,9 @@ registered automatically with [Console Application](#console-application).
 
 ### <a name="autoreload-service-provider"></a>AutoReload Service Provider
 Simple service provider for page auto-reload functionality. It will embed small
-JavaScript file into every page with Content-Type `text/html` that will reload
+JavaScript file into every page with `text/html` content type, that will reload
 the page once any (as per configuration) file in the tree is updated. Supports
-directories, file name patterns and path excluding.
+directories, file name patterns and path exclusions.
 
     use Lokhman\Silex\Provider as ToolsProviders;
 
@@ -111,7 +111,7 @@ directories, file name patterns and path excluding.
         ],
     ]);
 
-Module can be switched off setting parameter `autoreload` to `false`.
+Module can be switched off with setting `autoreload` parameter to `false`.
 
 Requires [`APCu`](http://php.net/manual/en/book.apcu.php) extension enabled and
 [`Symfony Finder`](https://github.com/symfony/finder) library.
