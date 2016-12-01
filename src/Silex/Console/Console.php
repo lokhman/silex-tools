@@ -30,8 +30,10 @@ namespace Lokhman\Silex\Console;
 
 use Silex\Application;
 use Symfony\Component\Console\Application as BaseConsole;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Lokhman\Silex\Console\Provider\AbstractServiceProvider;
 
 /**
@@ -55,10 +57,8 @@ class Console extends BaseConsole {
      * @param string $version        The version of the application
      */
     public function __construct(Application $container, $name = 'UNKNOWN', $version = 'UNKNOWN') {
+        set_time_limit(0);  // unset maximum execution time for CLI
         $this->container = $container;
-
-        set_time_limit(0);
-
         parent::__construct($name, $version);
     }
 
@@ -74,10 +74,50 @@ class Console extends BaseConsole {
     /**
      * {@inheritdoc}
      */
-    public function run(InputInterface $input = null, OutputInterface $output = null) {
+    public function doRun(InputInterface $input, OutputInterface $output) {
+        // if ConfigServiceProvider is enabled
+        if (isset($this->container['config'])) {
+            $env = $this->container['config.env.default'];
+            if ($input->hasParameterOption(['--env', '-e'], true)) {
+                $env = $input->getParameterOption(['--env', '-e']);
+                $this->container['config.env'] = $env;
+            }
+
+            $style = new OutputFormatterStyle(null, 'green');
+            $output->getFormatter()->setStyle('env', $style);
+            $formatter = $this->getHelperSet()->get('formatter');
+            $output->writeln([
+                $formatter->formatBlock('Environment: '.$env, 'env', true),
+                '',  // new line after info block
+            ]);
+        }
+
+        // boot Silex application
         $this->container->boot();
 
-        parent::run($input, $output);
+        // run console command
+        return parent::doRun($input, $output);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultCommands() {
+        $commands = parent::getDefaultCommands();
+        $commands[] = new Command\CacheCommand();
+        return $commands;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultInputDefinition() {
+        $inputDefinition = parent::getDefaultInputDefinition();
+        if (isset($this->container['config'])) {
+            $inputDefinition->addOption(new InputOption('env', 'e',
+                InputOption::VALUE_REQUIRED, 'Configuration environment'));
+        }
+        return $inputDefinition;
     }
 
     /**
@@ -90,7 +130,6 @@ class Console extends BaseConsole {
      */
     public function registerServiceProvider(AbstractServiceProvider $provider, array $values = array()) {
         $this->container->register($provider->setConsole($this), $values);
-
         return $this;
     }
 
