@@ -76,9 +76,10 @@ guess parameter types in SELECT, INSERT, UPDATE and DELETE queries.
         ],
     ]);
 
-    // in controller
+    // controller code
     $param = new \DateTime();  // parameter will be converted to `datetimetz`
     $user = $app['db']->fetchAssoc('SELECT * FROM tbl WHERE col > ?', [$param]);
+
     /*
      * array (size=3)
      *   'id' => int 1
