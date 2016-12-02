@@ -61,7 +61,7 @@ class CacheCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output) {
         $targets = $input->getArgument('targets') ? : static::$TARGETS;
         if ($unknown = array_diff($targets, static::$TARGETS)) {
-            $output->writeln(sprintf("<error>Unknown target '%s'</error>", $unknown[0]));
+            $output->writeln(sprintf('<error>Unknown target "%s"</error>', $unknown[0]));
             return;
         }
 

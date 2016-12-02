@@ -89,7 +89,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
         }
 
         if (!is_file($path) || !is_readable($path)) {
-            throw new \RuntimeException(sprintf("Unable to load configuration from '%s'.", $path));
+            throw new \RuntimeException(sprintf('Unable to load configuration from "%s".', $path));
         }
 
         $data = json_decode(file_get_contents($path), true);
@@ -118,7 +118,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
 
         $app['config'] = function(Container $app) {
             if (false === $app['config.dir'] = realpath($app['config.dir'])) {
-                throw new \RuntimeException("Parameter 'config.dir' should contain a valid path.");
+                throw new \RuntimeException('Parameter "config.dir" should contain a valid path.');
             }
 
             if (!isset($app['config.env'])) {

@@ -63,7 +63,7 @@ class AutoReloadServiceProvider implements ServiceProviderInterface, BootablePro
         }
 
         if (!isset($app['autoreload']['dirs']) || !$app['autoreload']['dirs']) {
-            throw new \RuntimeException("AutoReload must have 'dirs' parameter.");
+            throw new \RuntimeException('AutoReload must have "dirs" parameter.');
         }
 
         $finder = new Finder();
