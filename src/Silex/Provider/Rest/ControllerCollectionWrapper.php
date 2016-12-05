@@ -42,10 +42,16 @@ class ControllerCollectionWrapper {
 
     protected $controllerCollection;
     protected $controllers;
+    protected $static;
 
     public function __construct(Application $app, ControllerCollection $controllerCollection) {
         $this->controllerCollection = $controllerCollection;
         $this->controllers = $app['rest.controllers'];
+
+        // callback to generate new instance of current class
+        $this->static = function($controllerCollection) use ($app) {
+            return new static($app, $controllerCollection);
+        };
 
         // error handler must be executed here to match 405 Method Not Allowed
         $app->error(function(\Exception $ex, Request $request, $code) use ($app) {
@@ -78,6 +84,20 @@ class ControllerCollectionWrapper {
         }
 
         return $route;
+    }
+
+    /**
+     * Mounts controllers under the given route prefix.
+     *
+     * @param string   $prefix   The route prefix
+     * @param callable $callback A callable for defining routes
+     *
+     * @see ControllerCollection::mount()
+     */
+    public function mount($prefix, callable $callback) {
+        $this->controllerCollection->mount($prefix, function($container) use ($callback) {
+            $callback(call_user_func($this->static, $container));
+        });
     }
 
     /**
