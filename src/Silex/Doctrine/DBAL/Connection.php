@@ -46,6 +46,69 @@ class Connection extends BaseConnection {
     protected $profile;
     protected $mappings = [];
 
+    protected static function setParamTypes(array $params, array &$types) {
+        foreach ($params as $key => $value) {
+            if (isset($types[$key])) {
+                continue;
+            }
+
+            if (is_bool($value)) {
+                $types[$key] = Type::BOOLEAN;
+            } elseif (is_float($value)) {
+                $types[$key] = Type::FLOAT;
+            } elseif (is_int($value)) {
+                $types[$key] = Type::INTEGER;
+            } elseif (is_array($value)) {
+                $types[$key] = Type::TARRAY;
+            } elseif (is_resource($value)) {
+                $types[$key] = Type::BLOB;
+            } elseif ($value instanceof \DateTime) {
+                $types[$key] = Type::DATETIMETZ;
+            } elseif ($value instanceof \Serializable) {
+                $types[$key] = Type::OBJECT;
+            }
+        }
+    }
+
+    protected static function translateTypes(array $types) {
+        foreach ($types as &$type) {
+            if (!$type instanceof Type) {
+                $type = Type::getType($type);
+            }
+        }
+        return $types;
+    }
+
+    protected function parseSql($sql) {
+        $parser = new Parser($sql);
+        if (!isset($parser->statements[0])) {
+            throw new DBALException('No SQL queries provided.');
+        }
+        return $parser->statements[0];
+    }
+
+    protected function getColumnTypeNames($tableName) {
+        $types = [];
+        foreach ($this->getSchemaManager()->listTableColumns($tableName) as $column) {
+            $types[$column->getName()] = $column->getType()->getName();
+        }
+        return $types;
+    }
+
+    protected function getColumnTypes($tableName) {
+        if (function_exists('apcu_fetch')) {
+            $key = '__dbal:'.$this->profile.'.'.$tableName;
+            if (false === $types = apcu_fetch($key)) {
+                $types = $this->getColumnTypeNames($tableName);
+                apcu_store($key, $types);
+            }
+        } else {
+            $types = $this->getColumnTypeNames($tableName);
+        }
+
+        return Connection::translateTypes($types);
+    }
+
     /**
      * Gets connection profile.
      *
@@ -94,69 +157,6 @@ class Connection extends BaseConnection {
         return $this;
     }
 
-    protected static function translateTypes(array $types) {
-        foreach ($types as &$type) {
-            if (is_string($type)) {
-                $type = Type::getType($type);
-            }
-        }
-        return $types;
-    }
-
-    protected function parseSql($sql) {
-        $parser = new Parser($sql);
-        if (!isset($parser->statements[0])) {
-            throw new DBALException('No SQL queries provided.');
-        }
-        return $parser->statements[0];
-    }
-
-    protected function getColumnTypeNames($tableName) {
-        $types = [];
-        foreach ($this->getSchemaManager()->listTableColumns($tableName) as $column) {
-            $types[$column->getName()] = $column->getType()->getName();
-        }
-        return $types;
-    }
-
-    protected function getColumnTypes($tableName) {
-        if (function_exists('apcu_fetch')) {
-            $key = '__dbal:'.$this->profile.'.'.$tableName;
-            if (false === $types = apcu_fetch($key)) {
-                $types = $this->getColumnTypeNames($tableName);
-                apcu_store($key, $types);
-            }
-        } else {
-            $types = $this->getColumnTypeNames($tableName);
-        }
-
-        return Connection::translateTypes($types);
-    }
-
-    protected function setParamTypes(array $params, array &$types) {
-        foreach ($params as $key => $value) {
-            if (isset($types[$key])) {
-                continue;
-            }
-
-            if (is_bool($value)) {
-                $types[$key] = Type::BOOLEAN;
-            } elseif (is_float($value)) {
-                $types[$key] = Type::FLOAT;
-            } elseif (is_int($value)) {
-                $types[$key] = Type::INTEGER;
-            } elseif (is_array($value)) {
-                $types[$key] = Type::TARRAY;
-            } elseif (is_resource($value)) {
-                $types[$key] = Type::BLOB;
-            } elseif ($value instanceof \DateTime) {
-                $types[$key] = Type::DATETIMETZ;
-            } elseif ($value instanceof \Serializable) {
-                $types[$key] = Type::OBJECT;
-            }
-        }
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -175,7 +175,7 @@ class Connection extends BaseConnection {
         }
 
         // guess param types
-        $this->setParamTypes($params, $types);
+        Connection::setParamTypes($params, $types);
 
         // FROM + JOIN expressions
         $tableExprs = $parsedSql->from;
@@ -263,7 +263,7 @@ class Connection extends BaseConnection {
      */
     public function executeUpdate($query, array $params = [], array $types = []) {
         // guess param types
-        $this->setParamTypes($params, $types);
+        Connection::setParamTypes($params, $types);
 
         // execute query and return result
         return parent::executeUpdate($query, $params, $types);
