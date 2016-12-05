@@ -39,8 +39,6 @@ use Silex\Provider\DoctrineServiceProvider as BaseServiceProvider;
  */
 class DoctrineServiceProvider extends BaseServiceProvider {
 
-    const WRAPPER_CLASS = 'Lokhman\Silex\Doctrine\DBAL\Connection';
-
     /**
      * {@inheritdoc}
      */
@@ -48,7 +46,7 @@ class DoctrineServiceProvider extends BaseServiceProvider {
         parent::register($app);
 
         $options = $app['db.default_options'];
-        $options['wrapperClass'] = DoctrineServiceProvider::WRAPPER_CLASS;
+        $options['wrapperClass'] = 'Lokhman\Silex\Doctrine\DBAL\Connection';
         $app['db.default_options'] = $options;
 
         $app->extend('dbs', function($dbs) {

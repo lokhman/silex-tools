@@ -44,6 +44,7 @@ use SqlParser\Statements as Statements;
 class Connection extends BaseConnection {
 
     protected $profile;
+    protected $mappings = [];
 
     /**
      * Gets connection profile.
@@ -63,8 +64,43 @@ class Connection extends BaseConnection {
      */
     public function setProfile($profile) {
         $this->profile = $profile;
-
         return $this;
+    }
+
+    /**
+     * Returns mappings or <b>FALSE</b> if disabled.
+     *
+     * @return array|boolean
+     */
+    public function getMappings() {
+        return $this->mappings;
+    }
+
+    /**
+     * Sets mappings as array or boolean <b>FALSE</b> to disable the feature.
+     *
+     * @param array|boolean $mappings
+     *
+     * @return Connection
+     */
+    public function setMappings($mappings) {
+        if (is_array($mappings)) {
+            $this->mappings = Connection::translateTypes($mappings);
+        } elseif ($mappings === false) {
+            $this->mappings = false;
+        } else {
+            throw new \RuntimeException('Parameter "mappings" must be either array or FALSE.');
+        }
+        return $this;
+    }
+
+    protected static function translateTypes(array $types) {
+        foreach ($types as &$type) {
+            if (is_string($type)) {
+                $type = Type::getType($type);
+            }
+        }
+        return $types;
     }
 
     protected function parseSql($sql) {
@@ -94,9 +130,7 @@ class Connection extends BaseConnection {
             $types = $this->getColumnTypeNames($tableName);
         }
 
-        return array_map(function($name) {
-            return Type::getType($name);
-        }, $types);
+        return Connection::translateTypes($types);
     }
 
     protected function setParamTypes(array $params, array &$types) {
@@ -127,6 +161,11 @@ class Connection extends BaseConnection {
      * {@inheritdoc}
      */
     public function executeQuery($query, array $params = [], $types = [], QueryCacheProfile $qcp = null) {
+        // if mapping is disabled
+        if ($this->mappings === false) {
+            return parent::executeQuery($query, $params, $types, $qcp);
+        }
+
         $parsedSql = $this->parseSql($query);
 
         // SELECT 1 / SHOW / etc.
@@ -214,9 +253,9 @@ class Connection extends BaseConnection {
             }
         }
 
-        // generate result set
         $stmt = parent::executeQuery($query, $params, $types, $qcp);
-        return new Statement($this->getDatabasePlatform(), $stmt, $mappings);
+        return new Statement($this->getDatabasePlatform(), $stmt,
+            array_replace($mappings, $this->mappings));
     }
 
     /**
