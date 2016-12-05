@@ -10,6 +10,7 @@ You can install `silex-tools` with [Composer](http://getcomposer.org):
 - [Console Application](#console-application)
 - [Config Service Provider](#config-service-provider)
 - [Doctrine Service Provider](#doctrine-service-provider)
+- [REST Service Provider](#rest-service-provider)
 - [AutoReload Service Provider](#autoreload-service-provider)
 - [Tools Trait](#tools-trait)
 
@@ -59,7 +60,7 @@ Extended [`DoctrineServiceProvider`](http://silex.sensiolabs.org/doc/master/prov
 with wrapper classes for Doctrine `Connection` and `Statement`. It overrides the
 configuration and setup of the original service provider, but can automatically
 convert fetched values as per Doctrine column types from the database schema and
-guess parameter types in SELECT, INSERT, UPDATE and DELETE statements.
+guess parameter types in `SELECT`, `INSERT`, `UPDATE` and `DELETE` statements.
 
     use Lokhman\Silex\Provider as ToolsProviders;
 
@@ -87,10 +88,51 @@ guess parameter types in SELECT, INSERT, UPDATE and DELETE statements.
      *   'created_at' => object(DateTime)
      */
 
+Type mapping for `SELECT` statements can be disabled or overridden by passing
+respectively `FALSE` or types `array` to `$app['db']->setMappings()` helper
+method.
+
 Module is compatible with PDO drivers only and requires
 [`APCu`](http://php.net/manual/en/book.apcu.php) extension enabled for better
 performance. To clear APCu cache use console command `cache:clear`, that is
 registered automatically with [Console Application](#console-application).
+
+### <a name="rest-service-provider"></a>REST Service Provider
+Registering `RestServiceProvider` will easily extend your application routing
+with JSON request/response methods, error handing and JSON parameter acceptance.
+It works in the same way as Silex routing binding (`get`, `post`, etc methods),
+supports own `controllers_factory` and `mount` functionality.
+
+    use Lokhman\Silex\Provider as ToolsProviders;
+
+    $app->register(new ToolsProviders\RestServiceProvider());
+
+    // can return JSON object omitting $app->json() call
+    $app['rest']->get('/api', function() { return ['version' => '1.0']; });
+
+    // can mount controller collections
+    $app['rest']->mount('/api/v2', function($api) {
+        // accepts parameters from "application/json" body
+        $api->post('/submit', function(Request $request) {
+            return ['params' => $request->request->all()];
+        });
+    });
+
+    // can mount controller providers
+    class ApiBundle implements ControllerProviderInterface {
+        function connect(Application $app) {
+            $factory = $app['rest.controllers_factory'];
+
+            $factory->get('/', function() {
+                // will modify all exceptions to JSON compatible responses
+                throw new GoneHttpException('API v3 is not supported anymore.');
+            });
+
+            return $factory->getControllerCollection();
+        }
+    }
+
+    $app->mount('/api/v3', new ApiBundle());
 
 ### <a name="autoreload-service-provider"></a>AutoReload Service Provider
 Simple service provider for page auto-reload functionality. It will embed small
