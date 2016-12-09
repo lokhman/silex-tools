@@ -29,7 +29,6 @@
 namespace Lokhman\Silex\Application;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Tools trait.
@@ -49,7 +48,7 @@ trait ToolsTrait {
      * @return RedirectResponse
      */
     public function redirectToRoute($route, $parameters = array(), $status = 302) {
-        $url = $this['url_generator']->generate($route, $parameters, UrlGeneratorInterface::ABSOLUTE_PATH);
+        $url = $this['url_generator']->generate($route, $parameters);
         return new RedirectResponse($url, $status);
     }
 
