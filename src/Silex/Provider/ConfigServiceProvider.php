@@ -97,7 +97,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
             throw new \RuntimeException('Configuration JSON format is invalid.');
         }
 
-        if (isset($data['$extends'])) {
+        if (isset($data['$extends']) && is_string($data['$extends'])) {
             $extends = ConfigServiceProvider::readFile($dir, $data['$extends']);
             $data = array_replace_recursive($extends, $data);
             unset($data['$extends']);
@@ -129,11 +129,17 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
                 $app['config.env'] = getenv($varname) ? : $app['config.env.default'];
             }
 
+            $data = ConfigServiceProvider::readFile($app['config.dir'], $app['config.env']);
+            if (isset($data['$params']) && is_array($data['$params'])) {
+                $app['config.params'] += $data['$params'];
+                unset($data['$params']);
+            }
+
             $params = ['__DIR__' => $app['config.dir'], '__ENV__' => $app['config.env']];
             $params += array_change_key_case($app['config.params'], CASE_UPPER);
             $app['config.params'] = $params;
 
-            return ConfigServiceProvider::readFile($app['config.dir'], $app['config.env']);
+            return $data;
         };
     }
 
@@ -142,9 +148,9 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
      */
     public function boot(Application $app) {
         foreach ($app['config'] as $key => $value) {
-            $app[$key] = $app->factory(function(Application $app) use ($value) {
+            $app[$key] = function(Application $app) use ($value) {
                 return ConfigServiceProvider::replaceTokens($value, $app['config.params']);
-            });
+            };
         }
     }
 
