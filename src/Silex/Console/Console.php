@@ -104,7 +104,8 @@ class Console extends BaseConsole {
      */
     public function getDefaultCommands() {
         $commands = parent::getDefaultCommands();
-        $commands[] = new Command\CacheCommand();
+        $commands[] = new Command\CacheClearCommand();
+        $commands[] = new Command\SessionSchemaCreateCommand();
         return $commands;
     }
 

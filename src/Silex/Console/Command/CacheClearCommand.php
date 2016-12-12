@@ -34,12 +34,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Cache console command.
+ * Cache clear console command.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools
  */
-class CacheCommand extends Command {
+class CacheClearCommand extends Command {
 
     protected static $TARGETS = [
         'apcu',
