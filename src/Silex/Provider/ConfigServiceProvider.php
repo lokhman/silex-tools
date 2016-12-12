@@ -62,7 +62,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
 
         if (is_array($data)) {
             array_walk($data, function(&$value) use ($tokens) {
-                $value = ConfigServiceProvider::replaceTokens($value, $tokens);
+                $value = static::replaceTokens($value, $tokens);
             });
         }
 
@@ -98,7 +98,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
         }
 
         if (isset($data['$extends']) && is_string($data['$extends'])) {
-            $extends = ConfigServiceProvider::readFile($dir, $data['$extends']);
+            $extends = static::readFile($dir, $data['$extends']);
             $data = array_replace_recursive($extends, $data);
             unset($data['$extends']);
         }
@@ -129,7 +129,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
                 $app['config.env'] = getenv($varname) ? : $app['config.env.default'];
             }
 
-            $data = ConfigServiceProvider::readFile($app['config.dir'], $app['config.env']);
+            $data = static::readFile($app['config.dir'], $app['config.env']);
             if (isset($data['$params']) && is_array($data['$params'])) {
                 $app['config.params'] += $data['$params'];
                 unset($data['$params']);
@@ -148,9 +148,7 @@ class ConfigServiceProvider implements ServiceProviderInterface, BootableProvide
      */
     public function boot(Application $app) {
         foreach ($app['config'] as $key => $value) {
-            $app[$key] = function(Application $app) use ($value) {
-                return ConfigServiceProvider::replaceTokens($value, $app['config.params']);
-            };
+            $app[$key] = static::replaceTokens($value, $app['config.params']);
         }
     }
 
