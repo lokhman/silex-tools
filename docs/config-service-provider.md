@@ -80,6 +80,12 @@ variable.
 
     $ SILEX_ENV=prod bash -c "php bin/console migrations:status"
 
+If you use [Console Application](../#console-application) together with
+`ConfigServiceProvider` you can pass `--env` (`-e` in short) option to all
+registered commands:
+
+    $ php bin/console migrations:status --env=prod
+
 ## Parameters
 
 `ConfigServiceProvider` supports the following parameters:
@@ -93,6 +99,24 @@ variable.
 
 By default, service provider embeds tokens `__DIR__` and `__ENV__`, as well as
 all PHP environment variables (e.g. `REMOTE_ADDR`, `SERVER_NAME`, etc).
+
+## Dynamic tokens
+
+You can define tokens dynamically in the JSON files using property `$params`:
+
+    local.json
+    {
+        "$params": {
+            "SECRET": "3ecd45ff71c87269569e682f2f6b2ec4"
+        },
+        "settings": {
+            "prop1": "%SECRET%",
+            "prop2": "%secret%",
+            "prop3": "%SeCrEt%"
+        }
+    }
+
+**N.B.:** All tokens are case insensitive.
 
 ## Extending
 
