@@ -205,9 +205,11 @@ class Connection extends BaseConnection {
             if ($expr->alias) {
                 if ($expr->table) {
                     // SELECT a.b AS c
-                    $tableName = $tableNames[$expr->table];
-                    if (isset($columnTypes[$tableName][$expr->column])) {
-                        $mappings[$expr->alias] = $columnTypes[$tableName][$expr->column];
+                    if (isset($tableNames[$expr->table])) {
+                        $tableName = $tableNames[$expr->table];
+                        if (isset($columnTypes[$tableName][$expr->column])) {
+                            $mappings[$expr->alias] = $columnTypes[$tableName][$expr->column];
+                        }
                     }
                 } else {
                     // SELECT a AS c
@@ -221,9 +223,11 @@ class Connection extends BaseConnection {
             } elseif ($expr->column) {
                 if ($expr->table) {
                     // SELECT a.b
-                    $tableName = $tableNames[$expr->table];
-                    if (isset($columnTypes[$tableName][$expr->column])) {
-                        $mappings[$expr->column] = $columnTypes[$tableName][$expr->column];
+                    if (isset($tableNames[$expr->table])) {
+                        $tableName = $tableNames[$expr->table];
+                        if (isset($columnTypes[$tableName][$expr->column])) {
+                            $mappings[$expr->column] = $columnTypes[$tableName][$expr->column];
+                        }
                     }
                 } else {
                     // SELECT a
