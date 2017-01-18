@@ -52,4 +52,14 @@ trait ToolsTrait {
         return new RedirectResponse($url, $status);
     }
 
+    /**
+     * Adds a flash message for type.
+     *
+     * @param string $type
+     * @param string $message
+     */
+    public function addFlash($type, $message) {
+        $this['session']->getFlashBag()->add($type, $message);
+    }
+
 }
