@@ -81,10 +81,10 @@ class Connection extends BaseConnection {
 
     protected function parseSql($sql) {
         $parser = new Parser($sql);
-        if (!isset($parser->statements[0])) {
-            throw new DBALException('No SQL queries provided.');
+        if (isset($parser->statements[0])) {
+            return $parser->statements[0];
         }
-        return $parser->statements[0];
+        return false;
     }
 
     protected function getColumnTypeNames($tableName) {
@@ -165,12 +165,10 @@ class Connection extends BaseConnection {
      * {@inheritdoc}
      */
     public function executeQuery($query, array $params = [], $types = [], QueryCacheProfile $qcp = null) {
-        // if mapping is disabled
-        if ($this->mappings === false) {
+        // if mapping is disabled or query cannot be parsed
+        if ($this->mappings === false || false === $parsedSql = $this->parseSql($query)) {
             return parent::executeQuery($query, $params, $types, $qcp);
         }
-
-        $parsedSql = $this->parseSql($query);
 
         // SELECT 1 / SHOW / etc.
         if (!$parsedSql instanceof Statements\SelectStatement || !$parsedSql->from) {
