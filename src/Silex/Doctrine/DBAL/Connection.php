@@ -89,8 +89,12 @@ class Connection extends BaseConnection {
 
     protected function getColumnTypeNames($tableName) {
         $types = [];
-        foreach ($this->getSchemaManager()->listTableColumns($tableName) as $column) {
-            $types[$column->getName()] = $column->getType()->getName();
+        try {
+            foreach ($this->getSchemaManager()->listTableColumns($tableName) as $column) {
+                $types[$column->getName()] = $column->getType()->getName();
+            }
+        } catch (\Doctrine\DBAL\DBALException $ex) {
+            /* this may happen if table columns have unregistered types */
         }
         return $types;
     }
