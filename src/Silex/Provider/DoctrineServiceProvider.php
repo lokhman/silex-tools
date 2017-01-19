@@ -29,7 +29,8 @@
 namespace Lokhman\Silex\Provider;
 
 use Pimple\Container;
-use Silex\Provider\DoctrineServiceProvider as BaseServiceProvider;
+use Doctrine\DBAL\Types\Type;
+use Silex\Provider\DoctrineServiceProvider as BaseDoctrineServiceProvider;
 
 /**
  * Silex service provider for Doctrine DBAL extended functionality.
@@ -37,7 +38,7 @@ use Silex\Provider\DoctrineServiceProvider as BaseServiceProvider;
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools
  */
-class DoctrineServiceProvider extends BaseServiceProvider {
+class DoctrineServiceProvider extends BaseDoctrineServiceProvider {
 
     /**
      * {@inheritdoc}
@@ -45,14 +46,19 @@ class DoctrineServiceProvider extends BaseServiceProvider {
     public function register(Container $app) {
         parent::register($app);
 
+        $app['dbs.types'] = [];
+
         $options = $app['db.default_options'];
         $options['wrapperClass'] = 'Lokhman\Silex\Doctrine\DBAL\Connection';
         $app['db.default_options'] = $options;
 
-        $app->extend('dbs', function($dbs) {
-            foreach ($dbs->keys() as $name) {
-                $dbs->extend($name, function($db) use ($name) {
-                    return $db->setProfile($name);
+        $app->extend('dbs', function($dbs) use ($app) {
+            foreach ($dbs->keys() as $profile) {
+                $dbs->extend($profile, function($conn) use ($app, $profile) {
+                    foreach ($app['dbs.types'] as $typeName => $className) {
+                        Type::addType($typeName, $className);
+                    }
+                    return $conn->setProfile($profile);
                 });
             }
             return $dbs;
