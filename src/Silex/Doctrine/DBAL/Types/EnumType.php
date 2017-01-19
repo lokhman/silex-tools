@@ -31,6 +31,9 @@ namespace Lokhman\Silex\Doctrine\DBAL\Types;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * Type class to register ENUM database type.
@@ -42,37 +45,81 @@ class EnumType extends Type {
 
     const NAME = 'enum';
 
-    protected $values;
+    /**
+     * Overridable method to return ENUM values.
+     *
+     * @return array
+     */
+    protected function getValues() {
+        return [];
+    }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform) {
-        if (!isset($fieldDeclaration['values']) || !is_array($fieldDeclaration['values'])) {
-            var_dump($fieldDeclaration);
+        if (isset($fieldDeclaration['values'])) {
+            $values = $fieldDeclaration['values'];
+        } else {
+            $values = $this->getValues();
+        }
+
+        if (!$values || !is_array($values)) {
             throw new DBALException('Invalid ENUM declaration.');
         }
 
-        $this->values = $fieldDeclaration['values'];
+        $maxLength = 0;
+        foreach ($values as $value) {
+            $maxLength = max($maxLength, mb_strlen($value));
+            $literals[] = $platform->quoteStringLiteral($value);
+        }
 
-        return 'ENUM(' . implode(',', array_map(function($value) use ($platform) {
-            return $platform->quoteStringLiteral($value);
-        }, $this->values)) . ')';
+        $literals = implode(', ', $literals);
+
+        if ($platform instanceof SqlitePlatform) {
+            return sprinf('TEXT CHECK(%s IN (%s))', $fieldDeclaration['name'], $literals);
+        }
+
+        if ($platform instanceof PostgreSqlPlatform || $platform instanceof SQLServerPlatform) {
+            return sprintf('VARCHAR(%d) CHECK(%s IN (%s))', $maxLength, $fieldDeclaration['name'], $literals);
+        }
+
+        return sprintf('ENUM(%s)', $literals);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function convertToPHPValue($value, AbstractPlatform $platform) {
         return $value;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function convertToDatabaseValue($value, AbstractPlatform $platform) {
-        if (!in_array($value, $this->values)) {
-            throw new \InvalidArgumentException('Invalid ENUM value.');
+        if ($value === null) {
+            return null;
+        }
+
+        if (($values = $this->getValues()) && !in_array($value, $values)) {
+            throw new \InvalidArgumentException(sprintf('Invalid ENUM value "%s". Possible values are: %s.',
+                $value, implode(', ', $values)));
         }
 
         return $value;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function requiresSQLCommentHint(AbstractPlatform $platform) {
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getName() {
         return self::NAME;
     }
