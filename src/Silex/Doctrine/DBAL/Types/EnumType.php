@@ -48,9 +48,11 @@ class EnumType extends Type {
     /**
      * Overridable method to return ENUM values.
      *
+     * @static
+     *
      * @return array
      */
-    protected function getValues() {
+    public static function getValues() {
         return [];
     }
 
@@ -61,7 +63,7 @@ class EnumType extends Type {
         if (isset($fieldDeclaration['values'])) {
             $values = $fieldDeclaration['values'];
         } else {
-            $values = $this->getValues();
+            $values = static::getValues();
         }
 
         if (!$values || !is_array($values)) {
@@ -102,7 +104,7 @@ class EnumType extends Type {
             return null;
         }
 
-        if (($values = $this->getValues()) && !in_array($value, $values)) {
+        if (($values = static::getValues()) && !in_array($value, $values)) {
             throw new \InvalidArgumentException(sprintf('Invalid ENUM value "%s". Possible values are: %s.',
                 $value, implode(', ', $values)));
         }
