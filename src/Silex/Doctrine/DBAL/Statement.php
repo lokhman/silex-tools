@@ -89,19 +89,6 @@ class Statement extends PDOStatement implements \IteratorAggregate {
     }
 
     /**
-     * Iterates result set by column.
-     *
-     * @param int $columnIndex
-     *
-     * @return \Generator
-     */
-    public function iterateColumn($columnIndex = 0) {
-        while ($row = $this->stmt->fetchColumn($columnIndex)) {
-            yield $row;
-        }
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function setFetchMode($fetchMode, $arg2 = null, $arg3 = null) {
@@ -153,7 +140,7 @@ class Statement extends PDOStatement implements \IteratorAggregate {
      * {@inheritdoc}
      */
     public function fetchColumn($columnIndex = 0) {
-        return $this->iterateColumn($columnIndex)->current();
+        return $this->stmt->fetchColumn($columnIndex);
     }
 
 }

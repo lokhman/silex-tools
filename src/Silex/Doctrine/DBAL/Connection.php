@@ -30,7 +30,6 @@ namespace Lokhman\Silex\Doctrine\DBAL;
 
 use Doctrine\DBAL\Connection as BaseConnection;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
 use SqlParser\Parser;
 use SqlParser\Statements as Statements;
