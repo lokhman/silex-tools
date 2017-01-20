@@ -120,6 +120,10 @@ class Statement extends PDOStatement implements \IteratorAggregate {
      * {@inheritdoc}
      */
     public function fetch($fetchMode = null, $cursorOrientation = null, $cursorOffset = null) {
+        if ($fetchMode !== null && $fetchMode !== \PDO::FETCH_ASSOC && $fetchMode !== \PDO::FETCH_OBJ) {
+            return $this->stmt->fetch($fetchMode, $cursorOrientation, $cursorOffset);
+        }
+
         return $this->iterate($fetchMode, $cursorOrientation, $cursorOffset)->current();
     }
 
@@ -127,6 +131,10 @@ class Statement extends PDOStatement implements \IteratorAggregate {
      * {@inheritdoc}
      */
     public function fetchAll($fetchMode = null, $fetchArgument = null, $ctorArgs = null) {
+        if ($fetchMode !== null && $fetchMode !== \PDO::FETCH_ASSOC && $fetchMode !== \PDO::FETCH_OBJ) {
+            return $this->stmt->fetchAll($fetchMode, $fetchArgument, $ctorArgs);
+        }
+
         if ($fetchArgument === null && $ctorArgs === null) {
             return iterator_to_array($this->iterate($fetchMode));
         }
