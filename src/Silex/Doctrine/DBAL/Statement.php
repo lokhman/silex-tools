@@ -49,18 +49,26 @@ class Statement extends PDOStatement implements \IteratorAggregate {
         $this->mappings = $mappings;
     }
 
+    protected function convert($type, $value) {
+        if (is_callable($type)) {
+            return $type($value);
+        }
+
+        return $type->convertToPHPValue($value, $this->platform);
+    }
+
     protected function transform(&$row) {
         if (!$this->mappings) {
             return $row;
         }
 
-        if (is_array($row)) {
+        if (is_array($row) || $row instanceof \ArrayAccess) {
             foreach ($this->mappings as $alias => $type) {
-                $row[$alias] = $type->convertToPHPValue($row[$alias], $this->platform);
+                $row[$alias] = $this->convert($type, $row[$alias]);
             }
         } elseif ($row instanceof \stdClass) {
             foreach ($this->mappings as $alias => $type) {
-                $row->$alias = $type->convertToPHPValue($row->$alias, $this->platform);
+                $row->$alias = $this->convert($type, $row->$alias);
             }
         }
         return $row;

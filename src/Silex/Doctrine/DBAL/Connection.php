@@ -70,12 +70,15 @@ class Connection extends BaseConnection {
     }
 
     protected static function translateTypes(array $types) {
-        foreach ($types as &$type) {
-            if (!$type instanceof Type) {
-                $type = Type::getType($type);
+        $translated = [];
+        foreach ($types as $field => $type) {
+            if (is_string($type)) {
+                $translated[$field] = Type::getType($type);
+            } elseif ($type instanceof Type || is_callable($type)) {
+                $translated[$field] = $type;
             }
         }
-        return $types;
+        return $translated;
     }
 
     protected function parseSql($sql) {
