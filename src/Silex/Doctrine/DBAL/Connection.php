@@ -31,8 +31,8 @@ namespace Lokhman\Silex\Doctrine\DBAL;
 use Doctrine\DBAL\Connection as BaseConnection;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Types\Type;
-use SqlParser\Parser;
-use SqlParser\Statements as Statements;
+use PhpMyAdmin\SqlParser\Parser;
+use PhpMyAdmin\SqlParser\Statements as Statements;
 
 /**
  * Wrapper class for DBAL Connection.
