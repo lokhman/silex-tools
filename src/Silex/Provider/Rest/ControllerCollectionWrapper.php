@@ -31,6 +31,7 @@ namespace Lokhman\Silex\Provider\Rest;
 use Silex\Application;
 use Silex\ControllerCollection;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Wrapper class for ControllerCollection.
@@ -77,8 +78,16 @@ class ControllerCollectionWrapper {
                 }
 
                 // transform every returned data
-                $app->view(function($data) use ($app) {
-                    return $app->json($data);
+                $app->view(function($data) use ($app, $request) {
+                    $response = $app->json($data);
+                    if ($request->query->has('callback')) {
+                        try {
+                            $response->setCallback($request->query->get('callback'));
+                        } catch (\InvalidArgumentException $ex) {
+                            throw new BadRequestHttpException($ex->getMessage(), $ex->getPrevious(), $ex->getCode());
+                        }
+                    }
+                    return $response;
                 });
             }, Application::EARLY_EVENT);
         }
