@@ -1,7 +1,7 @@
 {
     "name": "lokhman/silex-tools",
     "type": "library",
-    "description": "Tools for Silex 2+ framework",
+    "description": "Tools for Silex 2.0+ framework",
     "keywords": ["silex", "tools"],
     "license": "MIT",
     "authors": [{
@@ -12,15 +12,13 @@
         "psr-4": { "Lokhman\\Silex\\": "src/Silex" }
     },
     "require": {
-        "silex/silex": "~2.0"
+        "silex/silex": "~2.0",
+        "lokhman/silex-config": "^2.0",
+        "lokhman/silex-console": "^2.0",
+        "lokhman/silex-restful": "^2.0"
     },
     "suggest": {
-        "ext-apcu": "For using AutoReload and Doctrine service providers",
-        "symfony/console": "For using Silex console application",
-        "symfony/finder": "For using AutoReload service provider",
-        "doctrine/dbal": "For using Doctrine service providers",
-        "doctrine/migrations": "For using Doctrine Migrations service provider",
-        "phpmyadmin/sql-parser": "For using Doctrine service provider",
-        "hashids/hashids": "For using Hashids service provider"
+        "lokhman/silex-hashids": "For using Hashids library",
+        "lokhman/silex-autoreload": "For using AutoReload functionality"
     }
 }
