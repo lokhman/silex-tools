@@ -32,7 +32,7 @@ use Silex\Application as BaseApplication;
 use Symfony\Component\Debug\ErrorHandler;
 
 /**
- * Overridden Silex application with preloaded configuration.
+ * Overridden Silex application class with preloaded configuration.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
  * @link https://github.com/lokhman/silex-tools

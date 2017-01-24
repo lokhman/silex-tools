@@ -10,16 +10,17 @@ You can install `silex-tools` with [Composer](http://getcomposer.org):
 - [Console Application](https://github.com/lokhman/silex-console)
 - [Config Service Provider](https://github.com/lokhman/silex-config)
 - [RESTful Service Provider](https://github.com/lokhman/silex-restful)
-- [Application Container](#application-container)
+- [Application Class](#application-class)
+- [Route Class](#route-class)
 - [Tools Trait](#tools-trait)
 
 ## <a name="suggested-components"></a>Suggested Components
 - [AutoReload Service Provider](https://github.com/lokhman/silex-autoreload)
 - [Hashids Service Provider](https://github.com/lokhman/silex-hashids)
 
-### <a name="application-container"></a>Application Container
-Class that overrides base `Silex\Application` and provides automatic registration of `ConfigServiceProvider`, error
-handling and [Tools Trait](#tools-trait).
+### <a name="application-class"></a>Application Class
+Class that overrides base `Silex\Application` class and provides automatic registration of `ConfigServiceProvider`,
+error handling and [Tools Trait](#tools-trait).
 
     use Lokhman\Silex\Application as BaseApplication;
 
@@ -34,6 +35,12 @@ handling and [Tools Trait](#tools-trait).
         }
 
     }
+
+### <a name="route-class"></a>Route Class
+Class that overrides base `Silex\Route` class and adds support for
+[`SecurityTrait`](http://silex.sensiolabs.org/doc/2.0/providers/security.html#traits). You can enable it with:
+
+    $app['route_class'] = 'Lokhman\Silex\Route';
 
 ### <a name="tools-trait"></a>Tools Trait
 Trait to be included in overridden Silex `Application` class. Provides various useful methods to be used in the
