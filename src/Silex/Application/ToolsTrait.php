@@ -28,7 +28,9 @@
 
 namespace Lokhman\Silex\Application;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * Tools trait.
@@ -47,9 +49,35 @@ trait ToolsTrait {
      *
      * @return RedirectResponse
      */
-    public function redirectToRoute($route, $parameters = array(), $status = 302) {
-        $url = $this['url_generator']->generate($route, $parameters);
-        return new RedirectResponse($url, $status);
+    public function redirectToRoute($route, array $parameters = [], $status = 302) {
+        return new RedirectResponse($this['url_generator']->generate($route, $parameters), $status);
+    }
+
+    /**
+     * Forward the request to another controller by the URI.
+     *
+     * @param string $uri
+     * @param string $method
+     * @param array $parameters
+     *
+     * @return Symfony\Component\HttpFoundation\Response
+     */
+    public function forward($uri, $method, array $parameters = []) {
+        $request = Request::create($uri, $method, $parameters);
+        return $this->handle($request, HttpKernelInterface::SUB_REQUEST);
+    }
+
+    /**
+     * Forward the request to another controller by the route name.
+     *
+     * @param string $route
+     * @param string $method
+     * @param array $parameters
+     *
+     * @return Symfony\Component\HttpFoundation\Response
+     */
+    public function forwardToRoute($route, $method, array $parameters = []) {
+        return $this->forward($this['url_generator']->generate($route, $parameters), $method);
     }
 
     /**
