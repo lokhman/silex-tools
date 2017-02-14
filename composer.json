@@ -18,6 +18,7 @@
         "lokhman/silex-restful": "^2.0"
     },
     "suggest": {
+        "lokhman/silex-assetic": "For using Assetic library",
         "lokhman/silex-hashids": "For using Hashids library",
         "lokhman/silex-autoreload": "For using AutoReload functionality"
     }

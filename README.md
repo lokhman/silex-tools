@@ -15,8 +15,9 @@ You can install `silex-tools` with [Composer](http://getcomposer.org):
 - [Tools Trait](#tools-trait)
 
 ## <a name="suggested-components"></a>Suggested Components
-- [AutoReload Service Provider](https://github.com/lokhman/silex-autoreload)
+- [Assetic Service Provider](https://github.com/lokhman/silex-assetic)
 - [Hashids Service Provider](https://github.com/lokhman/silex-hashids)
+- [AutoReload Service Provider](https://github.com/lokhman/silex-autoreload)
 
 ### <a name="application-class"></a>Application Class
 Class that overrides base `Silex\Application` class and provides automatic registration of `ConfigServiceProvider`,
