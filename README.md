@@ -1,4 +1,7 @@
 # silex-tools
+
+[![StyleCI](https://styleci.io/repos/66957621/shield?branch=master)](https://styleci.io/repos/66957621)
+
 Tools for [**Silex 2.0+**](http://silex.sensiolabs.org/) micro-framework.
 
 ## <a name="installation"></a>Installation
