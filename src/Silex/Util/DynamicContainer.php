@@ -3,6 +3,7 @@
  * Tools for Silex 2+ framework.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  *
  * Copyright (c) 2016 Alexander Lokhman <alex.lokhman@gmail.com>
@@ -34,16 +35,18 @@ use Pimple\Container;
  * Dynamically defined Pimple container.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  */
-class DynamicContainer extends Container {
-
+class DynamicContainer extends Container
+{
     protected $dynamic;
 
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($id) {
+    public function offsetGet($id)
+    {
         if (!isset($this[$id]) && $this->dynamic) {
             $dynamic = $this->dynamic;
             $this[$id] = $dynamic($id, $this);
@@ -57,8 +60,8 @@ class DynamicContainer extends Container {
      *
      * @param callable $callback
      */
-    public function dynamic(callable $callback) {
+    public function dynamic(callable $callback)
+    {
         $this->dynamic = $callback;
     }
-
 }

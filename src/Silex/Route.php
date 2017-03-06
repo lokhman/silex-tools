@@ -3,6 +3,7 @@
  * Tools for Silex 2+ framework.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  *
  * Copyright (c) 2016 Alexander Lokhman <alex.lokhman@gmail.com>
@@ -34,10 +35,10 @@ use Silex\Route as BaseRoute;
  * Overridden Silex route class with Security Trait.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  */
-class Route extends BaseRoute {
-
+class Route extends BaseRoute
+{
     use BaseRoute\SecurityTrait;
-
 }

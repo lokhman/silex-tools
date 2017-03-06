@@ -3,6 +3,7 @@
  * Tools for Silex 2+ framework.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  *
  * Copyright (c) 2016 Alexander Lokhman <alex.lokhman@gmail.com>
@@ -35,16 +36,18 @@ use Symfony\Component\Debug\ErrorHandler;
  * Overridden Silex application class with preloaded configuration.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  */
-class Application extends BaseApplication {
-
+class Application extends BaseApplication
+{
     use Application\ToolsTrait;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct(array $values = []) {
+    public function __construct(array $values = [])
+    {
         // register PHP errors and notices
         ErrorHandler::register();
 
@@ -54,5 +57,4 @@ class Application extends BaseApplication {
         // instantiate base application
         parent::__construct($values);
     }
-
 }
