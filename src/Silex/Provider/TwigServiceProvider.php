@@ -3,6 +3,7 @@
  * Tools for Silex 2+ framework.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  *
  * Copyright (c) 2016 Alexander Lokhman <alex.lokhman@gmail.com>
@@ -35,22 +36,24 @@ use Silex\Provider\TwigServiceProvider as BaseTwigServiceProvider;
  * Extended Twig service provider for Silex micro-framework.
  *
  * @author Alexander Lokhman <alex.lokhman@gmail.com>
+ *
  * @link https://github.com/lokhman/silex-tools
  */
-class TwigServiceProvider extends BaseTwigServiceProvider {
-
-    public function register(Container $app) {
+class TwigServiceProvider extends BaseTwigServiceProvider
+{
+    public function register(Container $app)
+    {
         parent::register($app);
 
         // add support for namespaces in "twig.paths" option
-        $app['twig.loader.filesystem'] = $app->extend('twig.loader.filesystem', function($fs, $app) {
+        $app['twig.loader.filesystem'] = $app->extend('twig.loader.filesystem', function ($fs, $app) {
             if (isset($app['twig.paths']) && is_array($app['twig.paths'])) {
                 foreach ($app['twig.paths'] as $namespace => $path) {
                     $fs->addPath($path, $namespace);
                 }
             }
+
             return $fs;
         });
     }
-
 }
