@@ -15,6 +15,7 @@ You can install `silex-tools` with [Composer](http://getcomposer.org):
 - [RESTful Service Provider](https://github.com/lokhman/silex-restful)
 - [Application Class](#application-class)
 - [Route Class](#route-class)
+- [Twig Service Provider](#twig-service-provider)
 - [Tools Trait](#tools-trait)
 
 ## <a name="suggested-components"></a>Suggested Components
@@ -22,9 +23,9 @@ You can install `silex-tools` with [Composer](http://getcomposer.org):
 - [Hashids Service Provider](https://github.com/lokhman/silex-hashids)
 - [AutoReload Service Provider](https://github.com/lokhman/silex-autoreload)
 
-### <a name="application-class"></a>Application Class
-Class that overrides base `Silex\Application` class and provides automatic registration of `ConfigServiceProvider`,
-error handling and [Tools Trait](#tools-trait).
+### <a name="application-container"></a>Application Container
+Class that overrides base `Silex\Application` class and provides automatic registration of
+`ConfigServiceProvider`, error handling and [Tools Trait](#tools-trait).
 
     use Lokhman\Silex\Application as BaseApplication;
 
@@ -42,13 +43,30 @@ error handling and [Tools Trait](#tools-trait).
 
 ### <a name="route-class"></a>Route Class
 Class that overrides base `Silex\Route` class and adds support for
-[`SecurityTrait`](http://silex.sensiolabs.org/doc/2.0/providers/security.html#traits). You can enable it with:
+[`SecurityTrait`](http://silex.sensiolabs.org/doc/2.0/providers/security.html#traits). You can
+enable it with:
 
     $app['route_class'] = 'Lokhman\Silex\Route';
 
+### <a name="twig-service-provider"></a>Twig Service Provider
+Extended service provider for traditional
+[`TwigServiceProvider`](http://silex.sensiolabs.org/doc/2.0/providers/twig.html) that enables
+support for namespaces in special `twig.paths` option.
+
+    use Lokhman\Silex\Provider\TwigServiceProvider;
+
+    $app->register(new TwigServiceProvider(), [
+        'twig.paths' => [
+            'PublicBundle' => '/path/to/src/PublicBundle/Resources/views',
+        ],
+    ]);
+
+    $app->render('@PublicBundle/default/index.html.twig');
+
 ### <a name="tools-trait"></a>Tools Trait
-Trait to be included in overridden Silex `Application` class. Provides various useful methods to be used in the
-container. This trait is automatically included into [Application Container](#application-container).
+Trait to be included in overridden Silex `Application` class. Provides various useful methods to be
+used in the container. This trait is automatically included into [Application
+Container](#application-container).
 
     use Silex\Application as BaseApplication;
     use Lokhman\Silex\Application\ToolsTrait;
