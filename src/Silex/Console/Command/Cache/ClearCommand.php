@@ -87,6 +87,10 @@ class ClearCommand extends Command
      */
     private function fsEmpty($path)
     {
+        if (!is_dir($path)) {
+            return;
+        }
+
         $iterator = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS);
         foreach (new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::CHILD_FIRST) as $fileInfo) {
             $file = $fileInfo->getPathname();
