@@ -15,9 +15,10 @@
         "silex/silex": "~2.0",
         "lokhman/silex-config": "^2.0",
         "lokhman/silex-console": "^2.0",
-        "lokhman/silex-restful": "^2.0"
+        "lokhman/silex-firewall": "^2.0"
     },
     "suggest": {
+        "lokhman/silex-restful": "For implementing RESTful functionality",
         "lokhman/silex-assetic": "For using Assetic library",
         "lokhman/silex-hashids": "For using Hashids library",
         "lokhman/silex-autoreload": "For using AutoReload functionality"
