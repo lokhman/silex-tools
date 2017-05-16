@@ -31,6 +31,7 @@ namespace Lokhman\Silex;
 
 use Silex\Application as BaseApplication;
 use Symfony\Component\Debug\ErrorHandler;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Overridden Silex application class with preloaded configuration.
@@ -56,5 +57,14 @@ class Application extends BaseApplication
 
         // instantiate base application
         parent::__construct($values);
+    }
+
+    /**
+     * Set trusted proxies for load balancer to use with firewall rules.
+     */
+    protected static function setDynamicTrustedProxies()
+    {
+        $addr = Request::createFromGlobals()->server->get('REMOTE_ADDR');
+        Request::setTrustedProxies(['127.0.0.1', $addr]);
     }
 }
